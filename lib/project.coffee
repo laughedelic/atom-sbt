@@ -119,6 +119,8 @@ class Project
   warnRE: /^\[warn\] ([^:]+):([0-9]+): (.*)/
   pointerRE: /^\[.*\] ( *)\^/
 
+  compilingRE: /^\[info\] Compiling .*/
+
   contRE:
     /^[0-9]+\. Waiting for source changes\.\.\. \(press enter to interrupt\)/
 
@@ -158,8 +160,13 @@ class Project
       do (line) =>
         # console.log(line)
         switch
+          when @compilingRE.exec(line)
+            # console.log("compilingRE #{line}")
+            @clearMessages()
+            @busyProvider.add("#{@title}: compiling")
           when @finalRE.exec(line)
             # console.log('finalRE')
+            @busyProvider.clear()
             @linter.setAllMessages(@messages)
             @pkgPath = null
           when match = @errorRE.exec(line)
